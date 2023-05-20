@@ -64,7 +64,7 @@ class Deep_Learning_Agent(Agent):
         return 0
                 
 
-    def min_max(self, board: Game, pl, depth):
+    def min_max(self, board: Game, pl, depth, alpha = -4000000000, beta = 40000000):
         if board.is_over:
             return (40000000*board.winner,0)
         if depth == self.depth:
@@ -74,13 +74,14 @@ class Deep_Learning_Agent(Agent):
         for i in range(7):
             new_board = copy.deepcopy(board)
             if new_board.make_move(i, pl) != -1:
-                ret = self.min_max(new_board, pl*-1, depth+1)[0]
+                ret = self.min_max(new_board, pl*-1, depth+1, alpha, beta)[0]
                 if self.verbose:
                     for _ in range(depth):
                         print(" ", end="")
                     
                     print(ret)
-               
+                # if depth == 0:
+                #     print(ret)
                 if pl == 1 and ret > best_score:
                     best_choice = i 
                     best_score = ret
@@ -91,6 +92,16 @@ class Deep_Learning_Agent(Agent):
                     return (ret, i)
                 elif ret == -40000000 and pl == -1:
                     return (ret, i)
+                if pl == 1:
+                    alpha = max(alpha,ret)
+                    if beta<alpha:
+                        
+                        # print("PRUNE %d <=%d : ret %d"%(beta,alpha,best_score))
+                        return (ret, i)
+                else:
+                    beta = min(beta,ret)
+                    if beta < alpha:
+                        return (ret,i)
         if self.verbose:
             print("------------")
         return (best_score, best_choice)

@@ -12,9 +12,10 @@ from deep_learning_agent import Deep_Learning_Agent
 
 
 new_Game = Game()
-players = [Smart_Agent(1), Deep_Learning_Agent(-1)]
+players = [Deep_Learning_Agent(1), Deep_Learning_Agent(-1)]
 turn = 0
 while not new_Game.is_over:
+    print(new_Game.turn)
     inp = players[turn].make_move(copy.deepcopy(new_Game))
     ret = new_Game.make_move(inp, players[turn].player)
     if ret == -1:
