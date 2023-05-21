@@ -27,37 +27,38 @@ class Smart_Agent(Agent):
             return (self.evaluate(board), 0)
         best_choice = 0
         best_score = -4000000000*pl
-        for i in range(7):
-            new_board = copy.deepcopy(board)
-            if new_board.make_move(i, pl) != -1:
+        for ch in range(7):
+            i = (ch+3)%7
+            new_board = board
+            y_put = new_board.make_move(i, pl)
+            if  y_put != -1:
                 ret = self.min_max(new_board, pl*-1, depth+1, alpha, beta)[0]
                 if self.verbose:
                     for _ in range(depth):
                         print(" ", end="")
                     
                     print(ret)
-                # if depth == 0:
-                #     print(ret)
+                if depth == 0:
+                    print(ret)
                 if pl == 1 and ret > best_score:
                     best_choice = i 
                     best_score = ret
                 elif pl == -1 and ret < best_score:
                     best_choice = i 
                     best_score = ret
-                if ret == 40000000 and pl == 1:
-                    return (ret, i)
-                elif ret == -40000000 and pl == -1:
-                    return (ret, i)
+                
                 if pl == 1:
                     alpha = max(alpha,ret)
                     if beta<alpha:
-                        
+                        board.undo_move(y_put, i)
                         # print("PRUNE %d <=%d : ret %d"%(beta,alpha,best_score))
                         return (ret, i)
                 else:
                     beta = min(beta,ret)
                     if beta < alpha:
+                        board.undo_move(y_put, i)
                         return (ret,i)
+                board.undo_move(y_put, i)
         if self.verbose:
             print("------------")
         return (best_score, best_choice)
@@ -72,6 +73,17 @@ class Smart_Agent(Agent):
         # print(inp)
         # sleep(3)
         return inp[1]
+    def min_eval(self, count, empties, curr):
+        score = 0
+        if count >= 4:
+            return 40000000 * curr
+        elif count == 3 and empties == 2:
+            score += 333*curr
+        elif count == 3 and empties == 1:
+            score += 11 * curr
+        elif count == 2 and empties == 2:
+            score += 2 * curr
+        return score
     def evaluate_specific(self, board: Game, y, x):
         score = 0
         curr =  board.board[y][x]
@@ -90,7 +102,7 @@ class Smart_Agent(Agent):
             
             return 40000000 * curr
         elif count_y == 3:
-            score += 33 * curr
+            score += 11 * curr
         
         empties = 0
         count_y = 0
@@ -106,14 +118,7 @@ class Smart_Agent(Agent):
             count_y+=1
         if i >= 0 and board.board[y][i] == 0:
             empties += 1
-        if count_y >= 4:
-            return 40000000 * curr
-        elif count_y == 3 and empties == 2:
-            score += 1000*curr
-        elif count_y == 3 and empties == 1:
-            score += 33 * curr
-        elif count_y == 2 and empties == 2:
-            score += 5 * curr
+        score += self.min_eval(count_y, empties, curr)
         
         empties = 0
         count_y = 0
@@ -133,14 +138,7 @@ class Smart_Agent(Agent):
             count_y+=1
         if i >= 0 and board.board[y][i] == 0:
             empties += 1
-        if count_y >= 4:
-            return 40000000 * curr
-        elif count_y == 3 and empties == 2:
-            score += 1000*curr
-        elif count_y == 3 and empties == 1:
-            score += 33 * curr
-        elif count_y == 2 and empties == 2:
-            score += 5 * curr
+        score += self.min_eval(count_y, empties, curr)
         empties = 0
         count_y = 0
         i = x
@@ -159,16 +157,11 @@ class Smart_Agent(Agent):
             count_y+=1
         if i < 7 and board.board[y][i] == 0:
             empties += 1
-        if count_y >= 4:
-            return 40000000 * curr
-        elif count_y == 3 and empties == 2:
-            score += 1000*curr
-        elif count_y == 3 and empties == 1:
-            score += 33 * curr
-        elif count_y == 2 and empties == 2:
-            score += 5 * curr
+        score += self.min_eval(count_y, empties, curr)
         if x == 3:
-            score+=7
+            score+=18*curr
         elif x == 2 or x==4:
-            score+=3
+            score+=9*curr
+        
+        
         return score

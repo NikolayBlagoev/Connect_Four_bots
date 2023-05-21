@@ -86,8 +86,16 @@ class Game(object):
             self.winner = curr
             self.is_over = True
             return True
+        if self.turn == 42:
+            self.winner = 0
+            self.is_over = True
+            return True
         return False
-        
+    def undo_move(self,y,x):
+        self.board[y][x] = 0
+        self.turn -= 1  
+        self.winner = 0
+        self.is_over = False
     def make_move(self, inp, player):
         if inp < 0 or inp > 6:
             return -1
@@ -100,3 +108,4 @@ class Game(object):
         self.turn += 1
         self.board[i][inp] = player
         self.is_won(i, inp)
+        return i

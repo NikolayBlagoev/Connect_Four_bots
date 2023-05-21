@@ -1,4 +1,4 @@
-from agent import Agent
+from smart_agent import Smart_Agent
 from game import Game
 from time import sleep
 import copy
@@ -39,8 +39,8 @@ class Net(nn.Module):
         x = self.layer1(x)
         x = self.layer2(self.tan(x + intrm) )
         return x
-class Deep_Learning_Agent(Agent):
-    def __init__(self, player, depth = 4) -> None:
+class Deep_Learning_Agent(Smart_Agent):
+    def __init__(self, player, depth = 6) -> None:
         self.player = player
         self.depth = depth
         self.verbose = False
@@ -48,7 +48,7 @@ class Deep_Learning_Agent(Agent):
         self.net.load_state_dict(torch.load("C4mod.pth"))
         print("READY!")
     def evaluate(self, board: Game):
-        score = 0
+        
         tens = torch.tensor(board.board).type(torch.FloatTensor).to("cpu")
         res = self.net(tens)[0]
         win_1 = res[2].item()
@@ -63,57 +63,7 @@ class Deep_Learning_Agent(Agent):
             return (draw*-1)/2
         return 0
                 
-
-    def min_max(self, board: Game, pl, depth, alpha = -4000000000, beta = 40000000):
-        if board.is_over:
-            return (40000000*board.winner,0)
-        if depth == self.depth:
-            return (self.evaluate(board), 0)
-        best_choice = 0
-        best_score = -4000000000*pl
-        for i in range(7):
-            new_board = copy.deepcopy(board)
-            if new_board.make_move(i, pl) != -1:
-                ret = self.min_max(new_board, pl*-1, depth+1, alpha, beta)[0]
-                if self.verbose:
-                    for _ in range(depth):
-                        print(" ", end="")
-                    
-                    print(ret)
-                # if depth == 0:
-                #     print(ret)
-                if pl == 1 and ret > best_score:
-                    best_choice = i 
-                    best_score = ret
-                elif pl == -1 and ret < best_score:
-                    best_choice = i 
-                    best_score = ret
-                if ret == 40000000 and pl == 1:
-                    return (ret, i)
-                elif ret == -40000000 and pl == -1:
-                    return (ret, i)
-                if pl == 1:
-                    alpha = max(alpha,ret)
-                    if beta<alpha:
-                        
-                        # print("PRUNE %d <=%d : ret %d"%(beta,alpha,best_score))
-                        return (ret, i)
-                else:
-                    beta = min(beta,ret)
-                    if beta < alpha:
-                        return (ret,i)
-        if self.verbose:
-            print("------------")
-        return (best_score, best_choice)
-        
-                    
+       
 
 
-
-
-    def make_move(self, board: Game):
-        inp = self.min_max(board, self.player, 0)
-        # print(inp)
-        # sleep(3)
-        return inp[1]
     
